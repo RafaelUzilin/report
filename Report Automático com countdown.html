@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório Power BI - Troca de Páginas</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      background-color: #000;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #004578;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 24px;
+      z-index: 1000;
+    }
+    .report-frame {
+ 	 position: absolute;
+ 	 top: 50px; /* espaço para o cabeçalho */
+	  left: 0;
+ 	 width: 100%;
+ 	 height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
+	  border: none;
+	  display: none;
+	}
+    .report-frame.active {
+      display: block;
+    }
+
+    /* Countdown e próxima atualização */
+    .timer-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      z-index: 1001;
+    }
+
+    .progress-circle {
+      transform: rotate(-90deg);
+    }
+
+    .progress-bar-bg {
+      stroke: #ccc;
+      stroke-width: 4;
+      fill: none;
+    }
+
+    .progress-bar {
+      stroke: #0078D4;
+      stroke-width: 4;
+      fill: none;
+      stroke-dasharray: 113.1; /* 2πr, r = 18 */
+      stroke-dashoffset: 113.1;
+      transition: stroke-dashoffset 10s linear;
+    }
+
+    .next-update-time {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 4px;
+      font-size: 11px;
+      color: #000;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header id="page-title">Bin</header>
+
+  <!-- Página: Bin -->
+  <iframe 
+    class="report-frame active"
+    data-title="Leshines Operation Report"
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=970fbd4e69b2529d056a&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    title="Bin">
+  </iframe>
+
+  <!-- Página: Inbound -->
+  <iframe 
+    class="report-frame"
+    data-title="Leshines Operation Report"
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    title="Inbound">
+  </iframe>
+
+  <!-- Página: Outbound -->
+  <iframe 
+    class="report-frame"
+    data-title="Leshines Operation Report"
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    title="Outbound">
+  </iframe>
+
+  <!-- Círculo de countdown + próxima atualização -->
+  <div class="timer-container">
+    <svg width="60" height="60" class="progress-circle">
+      <circle class="progress-bar-bg" cx="30" cy="30" r="18"></circle>
+      <circle class="progress-bar" cx="30" cy="30" r="18"></circle>
+    </svg>
+    <div class="next-update-time" id="next-update-text">--:--</div>
+  </div>
+
+  <script>
+    const frames = document.querySelectorAll('.report-frame');
+    const titleEl = document.getElementById('page-title');
+    const progressBar = document.querySelector('.progress-bar');
+    const updateText = document.getElementById('next-update-text');
+    const interval = 20000; // 20 segundos entre páginas
+    const refreshInterval = 15 * 60 * 1000; // 15 minutos
+    const perimeter = 2 * Math.PI * 18;
+    let current = 0;
+
+    const lastUpdated = Array(frames.length).fill(0);
+    const nextUpdate = Array(frames.length).fill(0);
+
+    function formatTime(ms) {
+      const date = new Date(ms);
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    function updateHeader() {
+      titleEl.textContent = frames[current].dataset.title;
+      const next = nextUpdate[current] ? formatTime(nextUpdate[current]) : '--:--';
+      updateText.textContent = next;
+    }
+
+    function updateProgressBar() {
+      progressBar.style.transition = 'none';
+      progressBar.style.strokeDashoffset = perimeter;
+      progressBar.getBoundingClientRect(); // força reflow
+      progressBar.style.transition = `stroke-dashoffset ${interval}ms linear`;
+      progressBar.style.strokeDashoffset = 0;
+    }
+
+    function reloadFrameIfNeeded(index) {
+      const now = Date.now();
+      if (now - lastUpdated[index] > refreshInterval) {
+        const frame = frames[index];
+        const src = frame.src;
+        frame.src = '';
+        setTimeout(() => {
+          frame.src = src;
+          lastUpdated[index] = now;
+          nextUpdate[index] = now + refreshInterval;
+          updateHeader();
+        }, 100);
+      } else {
+        updateHeader();
+      }
+    }
+
+    function changePage() {
+      frames[current].classList.remove('active');
+      current = (current + 1) % frames.length;
+      reloadFrameIfNeeded(current);
+      frames[current].classList.add('active');
+      updateProgressBar();
+    }
+
+    // Inicializa
+    const now = Date.now();
+    lastUpdated[current] = now;
+    nextUpdate[current] = now + refreshInterval;
+    updateProgressBar();
+    updateHeader();
+    setInterval(changePage, interval);
+  </script>
+
+</body>
+</html>
