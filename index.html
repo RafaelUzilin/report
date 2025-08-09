@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Relatório Power BI - Troca de Páginas</title>
+  <title>Relatório Power BI</title>
   <style>
     * {
       margin: 0;
@@ -16,26 +16,15 @@
       font-family: Arial, sans-serif;
       overflow: hidden;
     }
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #004578;
-      color: #fff;
-      text-align: center;
-      padding: 10px 0;
-      font-size: 24px;
-      z-index: 1000;
-    }
     .report-frame {
- 	 position: absolute;
- 	 top: 50px; /* espaço para o cabeçalho */
-	  left: 9%;
- 	 width: 82%;
- 	 height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
-	  border: none;
-	  display: none;
-	}
+      position: absolute;
+      top: 0;
+      left: 9%;       /* margem lateral */
+      width: 82%;     /* largura do report */
+      height: 100vh;  /* altura total da tela */
+      border: none;
+      display: none;
+    }
     .report-frame.active {
       display: block;
     }
@@ -49,17 +38,14 @@
       height: 60px;
       z-index: 1001;
     }
-
     .progress-circle {
       transform: rotate(-90deg);
     }
-
     .progress-bar-bg {
       stroke: #ccc;
       stroke-width: 4;
       fill: none;
     }
-
     .progress-bar {
       stroke: #0078D4;
       stroke-width: 4;
@@ -68,7 +54,6 @@
       stroke-dashoffset: 113.1;
       transition: stroke-dashoffset 10s linear;
     }
-
     .next-update-time {
       position: absolute;
       top: 100%;
@@ -85,12 +70,9 @@
 
 <body>
 
-  <header id="page-title">Bin</header>
-
   <!-- Página: Bin -->
   <iframe 
     class="report-frame active"
-    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=970fbd4e69b2529d056a&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Bin">
   </iframe>
@@ -98,7 +80,6 @@
   <!-- Página: Inbound -->
   <iframe 
     class="report-frame"
-    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Inbound">
   </iframe>
@@ -106,7 +87,6 @@
   <!-- Página: Outbound -->
   <iframe 
     class="report-frame"
-    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Outbound">
   </iframe>
@@ -122,14 +102,14 @@
 
   <script>
     const frames = document.querySelectorAll('.report-frame');
-    const titleEl = document.getElementById('page-title');
     const progressBar = document.querySelector('.progress-bar');
     const updateText = document.getElementById('next-update-text');
+
     const interval = 20000; // 20 segundos entre páginas
     const refreshInterval = 15 * 60 * 1000; // 15 minutos
     const perimeter = 2 * Math.PI * 18;
-    let current = 0;
 
+    let current = 0;
     const lastUpdated = Array(frames.length).fill(0);
     const nextUpdate = Array(frames.length).fill(0);
 
@@ -140,8 +120,7 @@
       return `${hh}:${mm}`;
     }
 
-    function updateHeader() {
-      titleEl.textContent = frames[current].dataset.title;
+    function updateNextUpdateTime() {
       const next = nextUpdate[current] ? formatTime(nextUpdate[current]) : '--:--';
       updateText.textContent = next;
     }
@@ -164,10 +143,10 @@
           frame.src = src;
           lastUpdated[index] = now;
           nextUpdate[index] = now + refreshInterval;
-          updateHeader();
+          updateNextUpdateTime();
         }, 100);
       } else {
-        updateHeader();
+        updateNextUpdateTime();
       }
     }
 
@@ -184,26 +163,9 @@
     lastUpdated[current] = now;
     nextUpdate[current] = now + refreshInterval;
     updateProgressBar();
-    updateHeader();
+    updateNextUpdateTime();
     setInterval(changePage, interval);
   </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
