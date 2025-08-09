@@ -28,16 +28,25 @@
       z-index: 1000;
     }
     .report-frame {
- 	 position: absolute;
- 	 top: 50px; /* espaço para o cabeçalho */
-	  left: 0;
- 	 width: 100%;
- 	 height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
-	  border: none;
-	  display: none;
-	}
+      position: absolute;
+      top: 50px; /* espaço para o cabeçalho */
+      left: 50%;
+      transform: translateX(-50%) scale(1);
+      transform-origin: top center;
+      width: 100%;
+      height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
+      border: none;
+      display: none;
+    }
     .report-frame.active {
       display: block;
+    }
+
+    /* Ajuste automático para celular em paisagem */
+    @media screen and (max-height: 500px) and (orientation: landscape) {
+      .report-frame {
+        transform: translateX(-50%) scale(0.88);
+      }
     }
 
     /* Countdown e próxima atualização */
@@ -91,7 +100,7 @@
   <iframe 
     class="report-frame active"
     data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=970fbd4e69b2529d056a&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=970fbd4e69b2529d056a&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360&navContentPaneEnabled=false&fitView=true" 
     title="Bin">
   </iframe>
 
@@ -99,7 +108,7 @@
   <iframe 
     class="report-frame"
     data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360&navContentPaneEnabled=false&fitView=true" 
     title="Inbound">
   </iframe>
 
@@ -107,7 +116,7 @@
   <iframe 
     class="report-frame"
     data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360&navContentPaneEnabled=false&fitView=true" 
     title="Outbound">
   </iframe>
 
