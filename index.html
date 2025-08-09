@@ -30,23 +30,14 @@
     .report-frame {
       position: absolute;
       top: 50px; /* espaço para o cabeçalho */
-      left: 0;
-      width: 100%;
-      height: calc(100vh - 50px);
+      left: 20%; /* 40% total = 20% de cada lado */
+      width: 60%; /* área visível central */
+      height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
       border: none;
       display: none;
     }
     .report-frame.active {
       display: block;
-    }
-
-    /* Ajuste para celulares em paisagem */
-    @media screen and (max-height: 500px) and (orientation: landscape) {
-      .report-frame {
-        width: 80%; /* reduz 20% da largura */
-        left: 50%;
-        transform: translateX(-50%);
-      }
     }
 
     /* Countdown e próxima atualização */
