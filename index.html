@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Relatório Power BI</title>
+  <title>Relatório Power BI - Troca de Páginas</title>
   <style>
     * {
       margin: 0;
@@ -16,15 +16,26 @@
       font-family: Arial, sans-serif;
       overflow: hidden;
     }
-    .report-frame {
-      position: absolute;
+    header {
+      position: fixed;
       top: 0;
-      left: 5%;       /* margem lateral */
-      width: 90%;     /* largura do report */
-      height: 100vh;  /* altura total da tela */
-      border: none;
-      display: none;
+      width: 100%;
+      background-color: #004578;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 24px;
+      z-index: 1000;
     }
+    .report-frame {
+ 	 position: absolute;
+ 	 top: 50px; /* espaço para o cabeçalho */
+	  left: 0;
+ 	 width: 100%;
+ 	 height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
+	  border: none;
+	  display: none;
+	}
     .report-frame.active {
       display: block;
     }
@@ -38,14 +49,17 @@
       height: 60px;
       z-index: 1001;
     }
+
     .progress-circle {
       transform: rotate(-90deg);
     }
+
     .progress-bar-bg {
       stroke: #ccc;
       stroke-width: 4;
       fill: none;
     }
+
     .progress-bar {
       stroke: #0078D4;
       stroke-width: 4;
@@ -54,6 +68,7 @@
       stroke-dashoffset: 113.1;
       transition: stroke-dashoffset 10s linear;
     }
+
     .next-update-time {
       position: absolute;
       top: 100%;
@@ -61,7 +76,7 @@
       transform: translateX(-50%);
       margin-top: 4px;
       font-size: 11px;
-      color: yellow; /* alterado de #000 para amarelo */
+      color: #000;
       text-align: center;
       font-family: Arial, sans-serif;
     }
@@ -70,9 +85,12 @@
 
 <body>
 
+  <header id="page-title">Bin</header>
+
   <!-- Página: Bin -->
   <iframe 
     class="report-frame active"
+    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=970fbd4e69b2529d056a&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Bin">
   </iframe>
@@ -80,6 +98,7 @@
   <!-- Página: Inbound -->
   <iframe 
     class="report-frame"
+    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Inbound">
   </iframe>
@@ -87,8 +106,17 @@
   <!-- Página: Outbound -->
   <iframe 
     class="report-frame"
+    data-title="Leshines Operation Report"
     src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
     title="Outbound">
+  </iframe>
+  
+  <!-- Página: CA performane -->
+  <iframe 
+    class="report-frame"
+    data-title="Leshines Operation Report"
+	src="https://app.powerbi.cn/reportEmbed?reportId=346570b0-9473-4e16-b241-afc354ddb2f5&pageName=54d7e0cd8b699294007b&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
+    title="CA Performance">
   </iframe>
 
   <!-- Círculo de countdown + próxima atualização -->
@@ -102,14 +130,14 @@
 
   <script>
     const frames = document.querySelectorAll('.report-frame');
+    const titleEl = document.getElementById('page-title');
     const progressBar = document.querySelector('.progress-bar');
     const updateText = document.getElementById('next-update-text');
-
-    const interval = 20000; // 20 segundos entre páginas
+    const interval = 30000; // 30 segundos entre páginas
     const refreshInterval = 15 * 60 * 1000; // 15 minutos
     const perimeter = 2 * Math.PI * 18;
-
     let current = 0;
+
     const lastUpdated = Array(frames.length).fill(0);
     const nextUpdate = Array(frames.length).fill(0);
 
@@ -120,7 +148,8 @@
       return `${hh}:${mm}`;
     }
 
-    function updateNextUpdateTime() {
+    function updateHeader() {
+      titleEl.textContent = frames[current].dataset.title;
       const next = nextUpdate[current] ? formatTime(nextUpdate[current]) : '--:--';
       updateText.textContent = next;
     }
@@ -143,10 +172,10 @@
           frame.src = src;
           lastUpdated[index] = now;
           nextUpdate[index] = now + refreshInterval;
-          updateNextUpdateTime();
+          updateHeader();
         }, 100);
       } else {
-        updateNextUpdateTime();
+        updateHeader();
       }
     }
 
@@ -163,11 +192,9 @@
     lastUpdated[current] = now;
     nextUpdate[current] = now + refreshInterval;
     updateProgressBar();
-    updateNextUpdateTime();
+    updateHeader();
     setInterval(changePage, interval);
   </script>
 
 </body>
 </html>
-
-
