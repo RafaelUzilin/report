@@ -1,204 +1,116 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Relatório Power BI - Troca de Páginas</title>
+  <meta charset="UTF-8" />
+  <title>URL Rotator Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      /* ajuste fino para “encaixar” no seu círculo vermelho */
+      --timer-offset-x: 10px; /* distância da borda direita */
+      --timer-offset-y: 8px;  /* distância da borda inferior */
     }
-    html, body {
-      height: 100%;
-      width: 100%;
-      background-color: #000;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-    header {
+    html, body { height:100%; margin:0; background:#000; overflow:hidden; }
+    iframe { width:100%; height:100%; border:none; display:none; }
+    #timer {
       position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #004578;
-      color: #fff;
-      text-align: center;
-      padding: 10px 0;
-      font-size: 24px;
-      z-index: 1000;
-    }
-    .report-frame {
- 	 position: absolute;
- 	 top: 50px; /* espaço para o cabeçalho */
-	  left: 0;
- 	 width: 100%;
- 	 height: calc(100vh - 50px); /* altura total da tela menos cabeçalho */
-	  border: none;
-	  display: none;
-	}
-    .report-frame.active {
-      display: block;
-    }
-
-    /* Countdown e próxima atualização */
-    .timer-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      z-index: 1001;
-    }
-
-    .progress-circle {
-      transform: rotate(-90deg);
-    }
-
-    .progress-bar-bg {
-      stroke: #ccc;
-      stroke-width: 4;
-      fill: none;
-    }
-
-    .progress-bar {
-      stroke: #0078D4;
-      stroke-width: 4;
-      fill: none;
-      stroke-dasharray: 113.1; /* 2πr, r = 18 */
-      stroke-dashoffset: 113.1;
-      transition: stroke-dashoffset 10s linear;
-    }
-
-    .next-update-time {
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      margin-top: 4px;
-      font-size: 11px;
-      color: #000;
-      text-align: center;
-      font-family: Arial, sans-serif;
+      right: var(--timer-offset-x);
+      bottom: var(--timer-offset-y);
+      color: #ff0000;            /* vermelho mais forte */
+      font-family: monospace;
+      font-weight: 800;          /* negrito */
+      font-size: 18px;           /* um pouco maior */
+      letter-spacing: 0.5px;
+      z-index: 9999;
+      /* sem fundo/quadrado */
+      background: transparent;
+      /* pequeno contorno pra legibilidade sobre fundos claros/escuros */
+      text-shadow: 0 0 3px rgba(0,0,0,0.85);
+      user-select: none;
+      pointer-events: none;
     }
   </style>
 </head>
+<body class="flex items-center justify-center">
 
-<body>
-	<header id="page-title">Report</header>
-	
-  <iframe 
-    class="report-frame"
-    data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=dc5ce38aea00c534582d&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
-    title="Warehouse Occupation">
-</iframe>
-
-<iframe 
-    class="report-frame"
-    data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=a83f37eabd0c65d901db&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
-    title="ABC Summary">
-</iframe>
-
-<iframe 
-    class="report-frame"
-    data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
-    title="Inbound">
-  </iframe>
-
-<iframe 
-    class="report-frame"
-    data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
-    title="Outbound">
-  </iframe>
-  
-  <iframe 
-    class="report-frame"
-    data-title="Leshines Operation Report"
-    src="https://app.powerbi.cn/reportEmbed?reportId=346570b0-9473-4e16-b241-afc354ddb2f5&pageName=54d7e0cd8b699294007b&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" 
-    title="CA Performance">
-</iframe>
-
-
-
-  <!-- Círculo de countdown + próxima atualização -->
-  <div class="timer-container">
-    <svg width="60" height="60" class="progress-circle">
-      <circle class="progress-bar-bg" cx="30" cy="30" r="18"></circle>
-      <circle class="progress-bar" cx="30" cy="30" r="18"></circle>
-    </svg>
-    <div class="next-update-time" id="next-update-text">--:--</div>
-  </div>
+  <iframe id="displayFrame"></iframe>
+  <div id="timer">--:--</div>
 
   <script>
-    const frames = document.querySelectorAll('.report-frame');
-    const titleEl = document.getElementById('page-title');
-    const progressBar = document.querySelector('.progress-bar');
-    const updateText = document.getElementById('next-update-text');
-    const interval = 30000; // 30 segundos entre páginas
-    const refreshInterval = 15 * 60 * 1000; // 15 minutos
-    const perimeter = 2 * Math.PI * 18;
-    let current = 0;
+    const urls = [
+		"https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=dc5ce38aea00c534582d&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Occupation*/
+		"https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=a83f37eabd0c65d901db&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*ABC*/
+		"https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Inbound*/ 
+		"https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Outbound*/
+		"https://app.powerbi.cn/reportEmbed?reportId=346570b0-9473-4e16-b241-afc354ddb2f5&pageName=54d7e0cd8b699294007b&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" /*CA*/
+    ];
 
-    const lastUpdated = Array(frames.length).fill(0);
-    const nextUpdate = Array(frames.length).fill(0);
+    // Tempos (ms)
+    const ONE_HALF_MIN   = 1.5 * 60 * 1000; // 1,5 min
+    const ONE_MIN        = 1.0 * 60 * 1000; // 1 min
+    const HALF_MIN       = 0.5 * 60 * 1000; // 0,5 min
+    const FADE = 300;
 
-    function formatTime(ms) {
-      const date = new Date(ms);
-      const hh = String(date.getHours()).padStart(2, '0');
-      const mm = String(date.getMinutes()).padStart(2, '0');
-      return `${hh}:${mm}`;
+    let currentIndex = 0;
+    let firstCycle = true;
+    let countdownInterval;
+
+    const $frame = $("#displayFrame");
+    const $timer = $("#timer");
+
+    function delayFor(index) {
+      if (index === 0) return ONE_HALF_MIN; // primeiro link sempre 1,5 min
+      return firstCycle ? ONE_MIN : HALF_MIN;
     }
 
-    function updateHeader() {
-      titleEl.textContent = frames[current].dataset.title;
-      const next = nextUpdate[current] ? formatTime(nextUpdate[current]) : '--:--';
-      updateText.textContent = next;
+    function startCountdown(ms) {
+      clearInterval(countdownInterval);
+      let remaining = Math.round(ms / 1000);
+      updateTimerDisplay(remaining);
+      countdownInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          remaining = 0;
+        }
+        updateTimerDisplay(remaining);
+      }, 1000);
     }
 
-    function updateProgressBar() {
-      progressBar.style.transition = 'none';
-      progressBar.style.strokeDashoffset = perimeter;
-      progressBar.getBoundingClientRect(); // força reflow
-      progressBar.style.transition = `stroke-dashoffset ${interval}ms linear`;
-      progressBar.style.strokeDashoffset = 0;
+    function updateTimerDisplay(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      $timer.text(`${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`);
     }
 
-    function reloadFrameIfNeeded(index) {
-      const now = Date.now();
-      if (now - lastUpdated[index] > refreshInterval) {
-        const frame = frames[index];
-        const src = frame.src;
-        frame.src = '';
-        setTimeout(() => {
-          frame.src = src;
-          lastUpdated[index] = now;
-          nextUpdate[index] = now + refreshInterval;
-          updateHeader();
-        }, 100);
-      } else {
-        updateHeader();
-      }
+    function loadUrl(index) {
+      const url = urls[index];
+      console.log(`Loading [${index}] -> ${url}`);
+      return new Promise(resolve => {
+        $frame.fadeOut(FADE, function () {
+          $frame.off("load");
+          $frame.attr("src", url);
+          $frame.on("load", function () {
+            $frame.fadeIn(FADE, resolve);
+          });
+        });
+      });
     }
 
-    function changePage() {
-      frames[current].classList.remove('active');
-      current = (current + 1) % frames.length;
-      reloadFrameIfNeeded(current);
-      frames[current].classList.add('active');
-      updateProgressBar();
+    async function rotate() {
+      const wait = delayFor(currentIndex);
+      startCountdown(wait);
+
+      await loadUrl(currentIndex);
+
+      currentIndex = (currentIndex + 1) % urls.length;
+      if (currentIndex === 0 && firstCycle) firstCycle = false;
+
+      setTimeout(rotate, wait);
     }
 
-    // Inicializa
-    const now = Date.now();
-    lastUpdated[current] = now;
-    nextUpdate[current] = now + refreshInterval;
-    updateProgressBar();
-    updateHeader();
-    setInterval(changePage, interval);
+    $(document).ready(() => rotate());
   </script>
-
 </body>
 </html>
