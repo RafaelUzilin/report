@@ -3,54 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <title>URL Rotator Dashboard</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
   <style>
     :root{
-      /* ajuste fino para “encaixar” no seu círculo vermelho */
-      --timer-offset-x: 10px; /* distância da borda direita */
-      --timer-offset-y: 8px;  /* distância da borda inferior */
+      --timer-offset-x: 10px;
+      --timer-offset-y: 8px;
     }
-    html, body { height:100%; margin:0; background:#000; overflow:hidden; }
-    iframe { width:100%; height:100%; border:none; display:none; }
+
+    html, body {
+      height:100%;
+      margin:0;
+      background:#000;
+      overflow:hidden;
+    }
+
+    iframe {
+      width:100%;
+      height:100%;
+      border:none;
+      display:none;
+    }
+
     #timer {
       position: fixed;
       right: var(--timer-offset-x);
       bottom: var(--timer-offset-y);
-      color: #ff0000;            /* vermelho mais forte */
+      color: #ff0000;
       font-family: monospace;
-      font-weight: 800;          /* negrito */
-      font-size: 18px;           /* um pouco maior */
+      font-weight: 800;
+      font-size: 18px;
       letter-spacing: 0.5px;
       z-index: 9999;
-      /* sem fundo/quadrado */
       background: transparent;
-      /* pequeno contorno pra legibilidade sobre fundos claros/escuros */
       text-shadow: 0 0 3px rgba(0,0,0,0.85);
       user-select: none;
       pointer-events: none;
     }
   </style>
 </head>
+
 <body class="flex items-center justify-center">
 
   <iframe id="displayFrame"></iframe>
   <div id="timer">--:--</div>
 
   <script>
+    /* ==========================
+       URLS
+       ========================== */
     const urls = [
-		"https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=dc5ce38aea00c534582d&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Occupation*/
-		"https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=a83f37eabd0c65d901db&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*ABC*/
-		"https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Inbound*/ 
-		"https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360", /*Outbound*/
-		"https://app.powerbi.cn/reportEmbed?reportId=346570b0-9473-4e16-b241-afc354ddb2f5&pageName=54d7e0cd8b699294007b&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360" /*CA*/
+      "https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=dc5ce38aea00c534582d&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360",
+      "https://app.powerbi.cn/reportEmbed?reportId=26a1f08d-6580-426a-b893-765236fdf729&pageName=a83f37eabd0c65d901db&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360",
+      "https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=df03977b21680c3e70d5&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360",
+      "https://app.powerbi.cn/reportEmbed?reportId=db9bbc45-1908-45ca-9b86-a1a5d7884d05&pageName=18cfcbb8fcbc8256408c&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360",
+      "https://app.powerbi.cn/reportEmbed?reportId=346570b0-9473-4e16-b241-afc354ddb2f5&pageName=54d7e0cd8b699294007b&autoAuth=true&ctid=a6c1b34e-d17f-48de-83b8-8e248b0f0360"
     ];
 
-    // Tempos (ms)
-    const ONE_HALF_MIN   = 1.5 * 60 * 1000; // 1,5 min
-    const ONE_MIN        = 1.0 * 60 * 1000; // 1 min
-    const HALF_MIN       = 0.5 * 60 * 1000; // 0,5 min
-    const FADE = 300;
+    /* ==========================
+       TEMPOS
+       ========================== */
+    const ONE_HALF_MIN = 1.5 * 60 * 1000;
+    const ONE_MIN      = 1.0 * 60 * 1000;
+    const HALF_MIN     = 0.5 * 60 * 1000;
+    const FADE         = 300;
 
     let currentIndex = 0;
     let firstCycle = true;
@@ -59,8 +77,25 @@
     const $frame = $("#displayFrame");
     const $timer = $("#timer");
 
+    /* =========================================================
+       **NEGRITO** — CENÁRIO B: CONFIGURAÇÕES DE AUTO-RECOVERY
+       ========================================================= */
+    const HARD_RELOAD_INTERVAL = 30 * 60 * 1000; // **NEGRITO** reload preventivo (30 min)
+    const IFRAME_LOAD_TIMEOUT  = 20 * 1000;      // **NEGRITO** timeout máximo do iframe (20s)
+
+    /* =========================================================
+       **NEGRITO** — HARD RELOAD PREVENTIVO (sessão Power BI)
+       ========================================================= */
+    setTimeout(() => {
+      console.warn("🔄 Hard reload preventivo para evitar expiração do Power BI");
+      location.reload(true);
+    }, HARD_RELOAD_INTERVAL);
+
+    /* ==========================
+       FUNÇÕES AUXILIARES
+       ========================== */
     function delayFor(index) {
-      if (index === 0) return ONE_HALF_MIN; // primeiro link sempre 1,5 min
+      if (index === 0) return ONE_HALF_MIN;
       return firstCycle ? ONE_MIN : HALF_MIN;
     }
 
@@ -68,6 +103,7 @@
       clearInterval(countdownInterval);
       let remaining = Math.round(ms / 1000);
       updateTimerDisplay(remaining);
+
       countdownInterval = setInterval(() => {
         remaining--;
         if (remaining <= 0) {
@@ -81,23 +117,45 @@
     function updateTimerDisplay(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
-      $timer.text(`${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`);
+      $timer.text(
+        `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`
+      );
     }
 
+    /* =========================================================
+       **NEGRITO** — LOAD URL COM WATCHDOG (CENÁRIO B)
+       ========================================================= */
     function loadUrl(index) {
       const url = urls[index];
       console.log(`Loading [${index}] -> ${url}`);
+
       return new Promise(resolve => {
+        let loaded = false;
+
+        // **NEGRITO** Watchdog de carregamento
+        const watchdog = setTimeout(() => {
+          if (!loaded) {
+            console.error("⚠️ Iframe não carregou. Recarregando página.");
+            location.reload(true);
+          }
+        }, IFRAME_LOAD_TIMEOUT);
+
         $frame.fadeOut(FADE, function () {
           $frame.off("load");
           $frame.attr("src", url);
+
           $frame.on("load", function () {
+            loaded = true;
+            clearTimeout(watchdog);
             $frame.fadeIn(FADE, resolve);
           });
         });
       });
     }
 
+    /* ==========================
+       ROTATOR
+       ========================== */
     async function rotate() {
       const wait = delayFor(currentIndex);
       startCountdown(wait);
@@ -109,6 +167,17 @@
 
       setTimeout(rotate, wait);
     }
+
+    /* =========================================================
+       **NEGRITO** — WATCHDOG CONTÍNUO (iframe quebrado)
+       ========================================================= */
+    setInterval(() => {
+      const src = $frame.attr("src");
+      if (!src || src === "about:blank") {
+        console.error("⚠️ Iframe inválido detectado. Reload forçado.");
+        location.reload(true);
+      }
+    }, 60 * 1000);
 
     $(document).ready(() => rotate());
   </script>
